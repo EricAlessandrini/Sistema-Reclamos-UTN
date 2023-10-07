@@ -63,7 +63,7 @@ public class ReclamoServiceImpl implements ReclamoService {
 	
 	@Override
 	public void actualizarReclamo(Reclamo reclamo) {
-		reclamoRepository.save(reclamo);
+			reclamoRepository.save(reclamo);
 	}
 	
 	

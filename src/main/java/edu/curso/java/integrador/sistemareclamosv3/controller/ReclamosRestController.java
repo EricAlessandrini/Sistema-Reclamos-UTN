@@ -11,11 +11,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import edu.curso.java.integrador.sistemareclamosv3.bo.Reclamo;
 import edu.curso.java.integrador.sistemareclamosv3.controller.dto.ReclamoDTO;
 import edu.curso.java.integrador.sistemareclamosv3.service.ReclamoService;
 
+import java.net.URI;
 import java.util.*;
 
 import javax.validation.Valid;
@@ -29,16 +31,16 @@ public class ReclamosRestController {
 
 	
 	@GetMapping //URL FINAL ES: /api/reclamos
-	public List<ReclamoDTO> recuperarTodosLosReclamos() {
+	public ResponseEntity<List<ReclamoDTO>> recuperarTodosLosReclamos() {
 		List<ReclamoDTO> reclamosDTO = new ArrayList<ReclamoDTO>();
 		
 		List<Reclamo> reclamos = reclamoService.recuperarTodosLosReclamos();
 		for (Reclamo reclamo : reclamos) {
 			reclamosDTO.add(new ReclamoDTO(reclamo));
 		}
-		
-		return reclamosDTO;
+		return ResponseEntity.ok(reclamosDTO);
 	}
+	
 	
 	@GetMapping(path = "/{id}") //URL FINAL ES: /api/reclamos/123456
 	public ResponseEntity<ReclamoDTO> recuperarReclamoPorId(@PathVariable Long id) {
@@ -54,28 +56,31 @@ public class ReclamosRestController {
 	}
 	
 	@PostMapping //URL FINAL ES: /api/reclamos
-	public ReclamoDTO altaDeNuevoReclamo(@RequestBody @Valid ReclamoDTO reclamoDTO) {
+	public ResponseEntity<ReclamoDTO> altaDeNuevoReclamo(@RequestBody @Valid ReclamoDTO reclamoDTO,
+			UriComponentsBuilder uriComponentsBuilder) {
 		Reclamo reclamo = new Reclamo();
 		reclamo.setTitulo(reclamoDTO.getTitulo());
 		reclamo.setDescripcion(reclamoDTO.getDescripcion());
 		Long idNuevoReclamo = reclamoService.altaDeNuevoReclamo(reclamo);
 		reclamoDTO.setId(idNuevoReclamo);
-		return reclamoDTO;
+		URI url = uriComponentsBuilder.path("/api/reclamos/{id}").buildAndExpand(reclamoDTO.getId()).toUri();
+		return ResponseEntity.created(url).body(reclamoDTO);
 	}
 	
 	
 	@DeleteMapping(path = "/{id}") //URL FINAL ES: /api/reclamos/123456
-	public void borrarReclamoPorId(@PathVariable Long id) {
-		reclamoService.borrarReclamo(id);	
+	public ResponseEntity borrarReclamoPorId(@PathVariable Long id) {
+		reclamoService.borrarReclamo(id);
+		return ResponseEntity.noContent().build();
 	}
 	
 	@PutMapping(path = "/{id}") //URL FINAL ES: /api/reclamos/123456
-	public ReclamoDTO altaDeNuevoReclamo(@PathVariable Long id, @RequestBody @Valid ReclamoDTO reclamoDTO) {
+	public ResponseEntity<ReclamoDTO> altaDeNuevoReclamo(@PathVariable Long id, @RequestBody @Valid ReclamoDTO reclamoDTO) {
 		Reclamo reclamo = reclamoService.buscarReclamoPorId(id);
 		reclamo.setTitulo(reclamoDTO.getTitulo());
 		reclamo.setDescripcion(reclamoDTO.getDescripcion());
 		reclamoService.actualizarReclamo(reclamo);
-		return reclamoDTO;
+		return ResponseEntity.ok(reclamoDTO);
 	}
 	
 }
